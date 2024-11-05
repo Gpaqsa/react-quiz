@@ -7,6 +7,8 @@ import { Error } from "./components/Error";
 import StartScreen from "./components/StartScreen";
 import Question from "./components/Question";
 import Progress from "./components/Progress";
+import FinishScreen from "./components/FinishScreen";
+import NextButton from "./components/NextButton";
 const initialState = {
   questions: [],
 
@@ -16,6 +18,8 @@ const initialState = {
   answer: null,
   points: 0,
   // id: "11e8",
+  highscore: 0,
+  // secondsRemaining: null,
 };
 
 const reducer = (state, action) => {
@@ -40,6 +44,15 @@ const reducer = (state, action) => {
       };
     case "nextQuestion":
       return { ...state, index: state.index + 1, answer: null };
+    case "finish":
+      return {
+        ...state,
+        status: "finished",
+        highscore:
+          state.points > state.highscore ? state.points : state.highscore,
+      };
+    case "restart":
+      return { ...initialState, questions: state.questions, status: "ready" };
     default:
       throw new Error("Unknown action");
   }
@@ -47,7 +60,7 @@ const reducer = (state, action) => {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { questions, status, index, answer, points } = state;
+  const { questions, status, index, answer, points, highscore } = state;
 
   const numQuestions = questions.length;
   const maxPossiblePoints = questions.reduce(
@@ -84,8 +97,24 @@ function App() {
               question={questions[index]}
               dispatch={dispatch}
               answer={answer}
+              index={index}
+              numQuestion={numQuestions}
+            />
+            <NextButton
+              dispatch={dispatch}
+              answer={answer}
+              index={index}
+              numQuestions={numQuestions}
             />
           </>
+        )}
+        {status === "finished" && (
+          <FinishScreen
+            points={points}
+            maxPossiblePoints={maxPossiblePoints}
+            highscore={highscore}
+            dispatch={dispatch}
+          />
         )}
       </Main>
     </div>
